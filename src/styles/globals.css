@@ -1,27 +1,37 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Lexend:wght@400;500;600;700&family=Montserrat:wght@800&family=Schibsted+Grotesk:wght@400;700&family=Wix+Madefor+Display:wght@800&family=Wix+Madefor+Text:wght@400;500;700&family=Work+Sans:wght@300;400&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
+@layer {
+  .green_button {
+    @apply hover:shadow-lg bg-green-100 px-[24px] py-[12px] rounded-[32px] text-green-700 font-lexend font-semibold;
+  }
+  .box {
+    @apply absolute top-[562px] right-[330px];
+  }
+  .inner {
+    @apply w-[330px] h-[105px] bg-white rounded-3xl flex flex-row pt-[5px] pl-[24px];
+  }
+  .avatar {
+    @apply border-2 border-white object-contain;
+  }
+  .text_block {
+    @apply flex flex-col justify-center ml-[15px];
+  }
+  .header {
+    @apply font-lexend font-semibold text-[16px];
+  }
+  .body {
+    @apply font-lexend font-normal text-[12px] text-[#68799F];
   }
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+html {
+  margin: 0;
+  padding: 0;
+  height: auto;
+  width: 100%;
+  overflow-x: hidden;
 }
