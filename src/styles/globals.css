@@ -34,4 +34,56 @@ html {
   height: auto;
   width: 100%;
   overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+html::-webkit-scrollbar {
+  width: 7px;
+  z-index: -1;
+}
+
+html::-webkit-scrollbar-thumb {
+  border-radius: 25px;
+  background-color: #25ad80;
+}
+
+.my-scrollbar::-webkit-scrollbar {
+  height: 14px;
+}
+
+.my-scrollbar::-webkit-scrollbar-thumb {
+  border-radius: 25px;
+  background-color: #25ad80;
+}
+
+.scroll-ul::-webkit-scrollbar {
+  width: 7px;
+  z-index: -1;
+}
+
+.scroll-ul::-webkit-scrollbar-thumb {
+  border-radius: 25px;
+  background-color: #25ad80;
+}
+
+.no-scroll::-webkit-scrollbar {
+  width: 0px;
+}
+
+.account-scroll::-webkit-scrollbar {
+  height: 10px;
+}
+
+.account-scroll::-webkit-scrollbar-thumb {
+  border-radius: 25px;
+  background-color: #25ad80;
+}
+
+.image-scroll::-webkit-scrollbar {
+  height: 10px;
+}
+
+.image-scroll::-webkit-scrollbar-thumb {
+  border-radius: 25px;
+  background-color: #25ad80;
 }

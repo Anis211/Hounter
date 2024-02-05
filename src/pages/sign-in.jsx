@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import Vector from "@/details/vector1";
 import Yellow from "@/details/yellow";
 import { Checkbox, Button } from "@material-tailwind/react";
@@ -8,8 +8,14 @@ import { auth } from "../../firebase/clientApp";
 import { motion, useInView } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import useUser from "@/details/user";
 
 export default function SignIn() {
+  useEffect(() => {
+    useUser.persist.rehydrate();
+  }, []);
+
+  const setUser = useUser((state) => state.setUser);
   const [signInWithEmailAndPassword] = useSignInWithEmailAndPassword(auth);
 
   const router = useRouter();
@@ -42,13 +48,19 @@ export default function SignIn() {
   const handleSubmit = async () => {
     try {
       await signInWithEmailAndPassword(email, password);
+      const user = auth.currentUser;
+      const id = user.uid;
+
+      await setUser(id);
+
       setIsSuccess(true);
       setTimeout(() => {
-        router.push("/");
+        router.push(`/account?id=${id}`);
       }, 1000);
     } catch (e) {
       setIsError(true);
       setError(e.message);
+
       setTimeout(() => {
         setIsError(false);
         setError("");
@@ -149,7 +161,7 @@ export default function SignIn() {
           </Link>
         </p>
       </div>
-      <div className="absolute left-[110vw] top-[22vh]">
+      <div className="fixed left-[105vw] top-[60vh]">
         <Yellow />
       </div>
     </div>
