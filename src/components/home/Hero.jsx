@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import Vector from "@/details/vector";
-import { Button, Avatar } from "@material-tailwind/react";
+import { Avatar } from "@material-tailwind/react";
 import { motion } from "framer-motion";
 
 export default function Hero() {
@@ -16,14 +16,14 @@ export default function Hero() {
   };
 
   return (
-    <div className="flex flex-row mb-[60px]">
+    <div className="md:w-full h-[90vh] md:h-auto flex flex-row mb-[60px] bg-white">
       <div className="relative bottom-[400px] left-[400px]">
         <Vector />
       </div>
-      <div className="w-[480px] h-[450px] absolute top-[182px]">
-        <motion.div>
+      <div className="lg:max-w-[37.5%] w-[90%] h-auto absolute top-[182px] md:flex md:flex-col md:items-center lg:block">
+        <motion.div className="flex items-center flex-col lg:block mt-20 md:mt-0 xl:mt-20">
           <motion.p
-            className="font-lexend font-bold text-[40px] text-[#1B1C57]"
+            className="font-lexend font-bold text-4xl md:text-5xl lg:text-4xl text-[#1B1C57]"
             initial="hidden"
             animate="visible"
             transition={{
@@ -38,7 +38,11 @@ export default function Hero() {
             </motion.span>
             <br />
             <motion.span variants={spanVariants} className="inline-block">
-              Live <span className="text-gray-100 "> Your Dreams</span>{" "}
+              Live{" "}
+              <span className="text-[#1B1C57] lg:text-gray-100">
+                {" "}
+                Your Dreams
+              </span>{" "}
             </motion.span>
             <br />
             <motion.span variants={spanVariants} className="inline-block">
@@ -46,7 +50,7 @@ export default function Hero() {
             </motion.span>
           </motion.p>
           <motion.p
-            className="font-lexend font-[400] text-[16px] mt-[24px]"
+            className="font-lexend font-[400] lg:text-lg md:text-2xl text-center lg:text-start pl-0 md:pl-4 lg:pl-0 text-xl md:max-w-[65%] lg:max-w-full mt-[24px]"
             initial={{
               y: 40,
               opacity: 0,
@@ -66,28 +70,9 @@ export default function Hero() {
             where it will be easier for you
           </motion.p>
         </motion.div>
-        <div className="my-[32px] h-[56px]">
-          <input
-            type="text"
-            placeholder="Search for the location you want"
-            className="rounded-full w-full h-full pl-10 pr-5 py-6 ring-1 ring-blue-gray-100 focus:outline-none focus:ring-blue-gray-400"
-          />
-          <img
-            alt="icon"
-            src="/search.png"
-            className="relative bottom-[40px] left-[10px]"
-          />
-          <Button
-            ripple
-            className="flex flex-row place-items-center bg-green-500 rounded-full px-[12px] py-[16px] w-[110px] h-[50px] relative bottom-[77.5px] left-[367px] capitalize "
-          >
-            <p className="font-lexend font-semibold text-[14px] pl-2">Search</p>
-            <img alt="arrow" src="/arrow-r.png" className="w-[24px] h-[24px]" />
-          </Button>
-        </div>
-        <div>
+        <div className="mt-2 2xl:mt-10 pl-2 md:pl-2 lg:pl-0 text-center md:text-start pt-5 pb-20 md:pb-0 md:mb-0 md:pt-0">
           <motion.h2
-            className="font-lexend font-normal text-gray-500 inline-block"
+            className="font-lexend font-normal text-gray-500 inline-block mb-3 md:mb-0"
             initial={{
               y: 40,
               opacity: 0,
@@ -106,7 +91,7 @@ export default function Hero() {
             Our Partnership
           </motion.h2>
           <motion.div
-            className="flex flex-row gap-9"
+            className="md:flex md:flex-row md:gap-9 md:pl-0 grid grid-cols-2 justify-items-center"
             initial={{
               y: 20,
               opacity: 0,
@@ -133,13 +118,13 @@ export default function Hero() {
           </motion.div>
         </div>
       </div>
-      <div className="flex flex-column justify-end rounded-bl-md">
+      <div className="hidden lg:flex lg:flex-column lg:justify-end rounded-bl-md">
         <img
           alt="hero"
           src="/hero.png"
-          className="w-[900px] h-[720px] relative bottom-[100px] left-[120px] rounded-bl-[80px]"
+          className="max-w-3xl max-h-2xl relative bottom-[13%] xl:left-[20%] left-[-10%] rounded-bl-[80px]"
         />
-        <div className="overflow-x-scroll">
+        <div className="overflow-x-scroll hidden 2xl:block">
           <div className="box">
             <div className="inner">
               <div className="flex flex-row items-center -space-x-4">

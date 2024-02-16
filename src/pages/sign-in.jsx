@@ -112,26 +112,25 @@ export default function SignIn() {
           {error}
         </p>
       </motion.div>
-      <div className="w-[460px] h-auto px-8 pt-10 pb-14 self-center mx-auto bg-[#D1FAE5] mt-[10%] text-center shadow-lg rounded-[16px]">
+      <div className="2xl:w-[30vw] w-full lg:w-[60vw] md:w-[60vw] h-auto px-8 pt-10 pb-14 self-center mx-auto bg-[#D1FAE5] mt-[10%] text-center shadow-lg rounded-[16px]">
         <div className="w-32 mb-6 mx-auto">
-          <h2 className="font-lexend font-bold text-[30px] text-[#047857] mb-1">
+          <h2 className="font-lexend font-bold xl:text-[30px] text-2xl text-[#047857] mb-1">
             Sign In
           </h2>
-          <img alt="svg" src="/line.svg" className="mx-auto w-full" />
         </div>
         <input
           type="email"
           placeholder="Email: "
           value={email}
-          className="w-80 h-12 rounded-lg mb-[15px] pl-[10px] focus:shadow-lg hover:shadow-md "
+          className="2xl:w-80 w-[90%] md:w-[80%] lg:w-[70%] h-12 rounded-lg mb-[15px] pl-[10px] focus:shadow-lg hover:shadow-md "
           onChange={handleEmailChange}
         />
-        <div className="flex flex-row relative left-9">
+        <div className="flex flex-row relative xl:left-9 left-[5%] md:left-[10%] lg:left-[15%]">
           <input
             type={showPassword ? "text" : "password"}
             value={password}
             placeholder="Your password: "
-            className="w-80 h-12 rounded-lg mb-[25px] pl-[10px]"
+            className="2xl:w-80 lg:w-[60%] h-12 rounded-lg mb-[25px] pl-[10px]"
             onChange={handlePasswordChange}
           />
           <div className="flex flex-col">
@@ -149,7 +148,7 @@ export default function SignIn() {
           </div>
         </div>
         <Button
-          className="w-80 h-12 bg-[#10B981] rounded-md font-lexend font-semibold text-gray-50 hover:shadow-lg active:bg-[#118C63]"
+          className="2xl:w-80 w-[90%] md:w-[80%] lg:w-[70%] h-12 bg-[#10B981] rounded-md font-lexend font-semibold text-gray-50 hover:shadow-lg active:bg-[#118C63]"
           onClick={handleSubmit}
         >
           Sign In

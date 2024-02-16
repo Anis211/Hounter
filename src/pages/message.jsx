@@ -17,6 +17,11 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true });
 
+  const [resendMessage, setResendMessage] = useState(false);
+  const [resendFriendMessage, setResendFriendMessage] = useState(false);
+  const [resendFriend, setResendFriend] = useState({});
+  let resendFriends = [];
+
   const [changeMessage, setChangeMessage] = useState(false);
   const [changedMessage, setChangedMessage] = useState("");
   const [elem, setElem] = useState({});
@@ -25,8 +30,11 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
   const [user, setUser] = useState(user1);
 
   const [inputValue, setInputValue] = useState("");
+  const [inputValue1, setInputValue1] = useState("");
 
   const [focused, setFocused] = useState(false);
+  const [focused1, setFocused1] = useState(false);
+
   const [scope, animate] = useAnimate();
 
   const [index, setIndex] = useState(friendId);
@@ -40,6 +48,7 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
 
   const [filteredFriends, setFilteredFriends] = useState(friends);
   const [filteredOptions, setFilteredOptions] = useState(options);
+  const [filteredOptions1, setFilteredOptions1] = useState(options);
 
   const [chosenChat, setChosenChat] = useState(
     friendId != null
@@ -65,15 +74,6 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
       setContext((prev) => ({ ...prev, [index]: false }));
     });
   }, [content]);
-
-  useEffect(() => {
-    setContent(
-      [
-        ...user.chats[friendId].userMessages,
-        ...user.chats[friendId].friendMessages,
-      ].sort((m1, m2) => (m1.time.ms > m2.time.ms ? 1 : -1))
-    );
-  }, [user, friendId]);
 
   useEffect(() => {
     setContent(
@@ -132,29 +132,37 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
     setFilteredOptions(options.filter((elem) => elem.includes(e.target.value)));
+  };
 
-    setFilteredFriends(
-      friends.filter(
-        (elem) =>
-          elem.details.name
-            .split(" ")
-            .slice(1, 3)
-            .join(" ")
-            .includes(e.target.value) || elem.details.name == e.target.value
-      )
+  const handleInputChange1 = (e) => {
+    setInputValue1(e.target.value);
+    setFilteredOptions1(
+      options.filter((elem) => elem.includes(e.target.value))
     );
   };
 
   const handleClick = async (e) => {
     setInputValue(e.target.id);
     setFilteredFriends(
-      friends.filter((elem) =>
-        elem.details.name.split(" ").slice(1, 3).join(" ").includes(e.target.id)
-      )
+      friends.filter((elem) => elem.details.name.includes(e.target.id))
     );
 
     await disapear();
     setFocused(false);
+  };
+
+  const handleClick1 = async (e) => {
+    const arr = friends;
+
+    setInputValue1(e.target.id);
+    resendFriends = arr.filter((elem) =>
+      elem.details.name.split(" ").slice(1, 3).join(" ").includes(e.target.id)
+    )[0];
+
+    setResendFriend(resendFriends);
+
+    await disapear();
+    setFocused1(false);
   };
 
   const handleFocus = async () => {
@@ -166,9 +174,23 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
     await appear();
   };
 
+  const handleFocus1 = async () => {
+    const focus = async () => {
+      setFocused1(true);
+    };
+
+    await focus();
+    await appear();
+  };
+
   const handleBlur = async () => {
     await disapear();
     setFocused(false);
+  };
+
+  const handleBlur1 = async () => {
+    await disapear();
+    setFocused1(false);
   };
 
   const handleSendMessage = async () => {
@@ -257,177 +279,66 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
     const friendChat = chosenChat.chats[userId];
     const userChat = user.chats[chosenChat.details.id];
 
-    if (element.sender == "user") {
-      await setDoc(doc(firestore, "Users", chosenChat.details.id), {
-        ...chosenChat,
-        chats: {
-          ...chosenChat.chats,
-          [userId]: {
-            ...friendChat,
-            friendMessages: [
-              ...friendChat.friendMessages.slice(
-                0,
-                user.chats[chosenChat.details.id].userMessages.indexOf(element)
-              ),
-              ...friendChat.friendMessages.slice(
-                user.chats[chosenChat.details.id].userMessages.indexOf(
-                  element
-                ) + 1,
-                friendChat.friendMessages.length
-              ),
-            ],
-            lastMessage:
-              content.indexOf(element) + 1 == content.length &&
-              content.length > 1
-                ? {
-                    text: content[content.length - 2].text,
-                    time: {
-                      hours: content[content.length - 2].time.hours,
-                      minutes: content[content.length - 2].time.minutes,
-                    },
-                  }
-                : content.indexOf(element) + 1 == content.length &&
-                    content.length == 1
-                  ? {
-                      text: "",
-                      time: {
-                        hours: "-",
-                        minutes: "-",
-                      },
-                    }
-                  : friendChat.lastMessage,
+    const deletedVersion = { ...element, text: "Deleted message" };
+
+    await setDoc(doc(firestore, "Users", chosenChat.details.id), {
+      ...chosenChat,
+      chats: {
+        ...chosenChat.chats,
+        [userId]: {
+          ...friendChat,
+          friendMessages: [
+            ...friendChat.friendMessages.slice(
+              0,
+              user.chats[chosenChat.details.id].userMessages.indexOf(element)
+            ),
+            deletedVersion,
+            ...friendChat.friendMessages.slice(
+              user.chats[chosenChat.details.id].userMessages.indexOf(element) +
+                1,
+              friendChat.friendMessages.length
+            ),
+          ],
+          lastMessage: {
+            text: deletedVersion.text,
+            time: {
+              hours: deletedVersion.time.hours,
+              minutes: deletedVersion.time.hours,
+            },
           },
         },
-      });
-      await setDoc(doc(firestore, "Users", user.details.id), {
-        ...user,
-        chats: {
-          ...user.chats,
-          [chosenChat.details.id]: {
-            ...userChat,
-            userMessages: [
-              ...userChat.userMessages.slice(
-                0,
-                user.chats[chosenChat.details.id].userMessages.indexOf(element)
-              ),
-              ...userChat.userMessages.slice(
-                user.chats[chosenChat.details.id].userMessages.indexOf(
-                  element
-                ) + 1,
-                userChat.userMessages.length
-              ),
-            ],
-            lastMessage:
-              content.indexOf(element) + 1 == content.length &&
-              content.length > 1
-                ? {
-                    text: content[content.length - 2].text,
-                    time: {
-                      hours: content[content.length - 2].time.hours,
-                      minutes: content[content.length - 2].time.minutes,
-                    },
-                  }
-                : content.indexOf(element) + 1 == content.length &&
-                    content.length == 1
-                  ? {
-                      text: "",
-                      time: {
-                        hours: "-",
-                        minutes: "-",
-                      },
-                    }
-                  : userChat.lastMessage,
+      },
+    });
+
+    await setDoc(doc(firestore, "Users", user.details.id), {
+      ...user,
+      chats: {
+        ...user.chats,
+        [chosenChat.details.id]: {
+          ...userChat,
+          userMessages: [
+            ...userChat.userMessages.slice(
+              0,
+              user.chats[chosenChat.details.id].userMessages.indexOf(element)
+            ),
+            deletedVersion,
+            ...userChat.userMessages.slice(
+              user.chats[chosenChat.details.id].userMessages.indexOf(element) +
+                1,
+              userChat.userMessages.length
+            ),
+          ],
+          lastMessage: {
+            text: deletedVersion.text,
+            time: {
+              hours: deletedVersion.time.hours,
+              minutes: deletedVersion.time.hours,
+            },
           },
         },
-      });
-    } else {
-      await setDoc(doc(firestore, "Users", chosenChat.details.id), {
-        ...chosenChat,
-        chats: {
-          ...chosenChat.chats,
-          [userId]: {
-            ...friendChat,
-            userMessages: [
-              ...friendChat.userMessages.slice(
-                0,
-                user.chats[chosenChat.details.id].friendMessages.indexOf(
-                  element
-                )
-              ),
-              ...friendChat.userMessages.slice(
-                user.chats[chosenChat.details.id].friendMessages.indexOf(
-                  element
-                ) + 1,
-                friendChat.userMessages.length
-              ),
-            ],
-            lastMessage:
-              content.indexOf(element) + 1 == content.length &&
-              content.length > 1
-                ? {
-                    text: content[content.length - 2].text,
-                    time: {
-                      hours: content[content.length - 2].time.hours,
-                      minutes: content[content.length - 2].time.minutes,
-                    },
-                  }
-                : content.indexOf(element) + 1 == content.length &&
-                    content.length == 1
-                  ? {
-                      text: "",
-                      time: {
-                        hours: "-",
-                        minutes: "-",
-                      },
-                    }
-                  : friendChat.lastMessage,
-          },
-        },
-      });
-      await setDoc(doc(firestore, "Users", user.details.id), {
-        ...user,
-        chats: {
-          ...user.chats,
-          [chosenChat.details.id]: {
-            ...userChat,
-            friendMessages: [
-              ...userChat.friendMessages.slice(
-                0,
-                user.chats[chosenChat.details.id].friendMessages.indexOf(
-                  element
-                )
-              ),
-              ...userChat.friendMessages.slice(
-                user.chats[chosenChat.details.id].friendMessages.indexOf(
-                  element
-                ) + 1,
-                userChat.friendMessages.length
-              ),
-            ],
-            lastMessage:
-              content.indexOf(element) + 1 == content.length &&
-              content.length > 1
-                ? {
-                    text: content[content.length - 2].text,
-                    time: {
-                      hours: content[content.length - 2].time.hours,
-                      minutes: content[content.length - 2].time.minutes,
-                    },
-                  }
-                : content.indexOf(element) + 1 == content.length &&
-                    content.length == 1
-                  ? {
-                      text: "",
-                      time: {
-                        hours: "-",
-                        minutes: "-",
-                      },
-                    }
-                  : userChat.lastMessage,
-          },
-        },
-      });
-    }
+      },
+    });
+
     const res = await getDoc(doc(firestore, "Users", userId));
     const user2 = res.data();
 
@@ -441,10 +352,19 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
   const handleChangeMessage = async () => {
     const friendChat = chosenChat.chats[userId];
     const userChat = user.chats[chosenChat.details.id];
-    const changedContent = {
+
+    const changedUserContent = {
       ...elem,
       text: changedMessage,
       changed: true,
+      sender: "user",
+    };
+
+    const changedFriendContent = {
+      ...elem,
+      text: changedMessage,
+      changed: true,
+      sender: "friend",
     };
 
     if (elem.sender == "user") {
@@ -459,7 +379,7 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                 0,
                 user.chats[chosenChat.details.id].userMessages.indexOf(elem)
               ),
-              changedContent,
+              changedFriendContent,
               ...friendChat.friendMessages.slice(
                 user.chats[chosenChat.details.id].userMessages.indexOf(elem) +
                   1,
@@ -469,16 +389,17 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
             lastMessage:
               content.indexOf(elem) + 1 == content.length
                 ? {
-                    text: changedContent.text,
+                    text: changedFriendContent.text,
                     time: {
-                      hours: changedContent.time.hours,
-                      minutes: changedContent.time.minutes,
+                      hours: changedFriendContent.time.hours,
+                      minutes: changedFriendContent.time.minutes,
                     },
                   }
                 : friendChat.lastMessage,
           },
         },
       });
+
       await setDoc(doc(firestore, "Users", user.details.id), {
         ...user,
         chats: {
@@ -490,7 +411,7 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                 0,
                 user.chats[chosenChat.details.id].userMessages.indexOf(elem)
               ),
-              changedContent,
+              changedUserContent,
               ...userChat.userMessages.slice(
                 user.chats[chosenChat.details.id].userMessages.indexOf(elem) +
                   1,
@@ -500,10 +421,10 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
             lastMessage:
               content.indexOf(elem) + 1 == content.length
                 ? {
-                    text: changedContent.text,
+                    text: changedUserContent.text,
                     time: {
-                      hours: changedContent.time.hours,
-                      minutes: changedContent.time.minutes,
+                      hours: changedUserContent.time.hours,
+                      minutes: changedUserContent.time.minutes,
                     },
                   }
                 : userChat.lastMessage,
@@ -522,7 +443,7 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                 0,
                 user.chats[chosenChat.details.id].friendMessages.indexOf(elem)
               ),
-              changedContent,
+              changedUserContent,
               ...friendChat.userMessages.slice(
                 user.chats[chosenChat.details.id].friendMessages.indexOf(elem) +
                   1,
@@ -532,16 +453,17 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
             lastMessage:
               content.indexOf(elem) + 1 == content.length
                 ? {
-                    text: changedContent.text,
+                    text: changedUserContent.text,
                     time: {
-                      hours: changedContent.time.hours,
-                      minutes: changedContent.time.minutes,
+                      hours: changedUserContent.time.hours,
+                      minutes: changedUserContent.time.minutes,
                     },
                   }
                 : friendChat.lastMessage,
           },
         },
       });
+
       await setDoc(doc(firestore, "Users", user.details.id), {
         ...user,
         chats: {
@@ -553,7 +475,7 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                 0,
                 user.chats[chosenChat.details.id].friendMessages.indexOf(elem)
               ),
-              changedContent,
+              changedFriendContent,
               ...userChat.friendMessages.slice(
                 user.chats[chosenChat.details.id].friendMessages.indexOf(elem) +
                   1,
@@ -563,10 +485,10 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
             lastMessage:
               content.indexOf(elem) + 1 == content.length
                 ? {
-                    text: changedContent.text,
+                    text: changedFriendContent.text,
                     time: {
-                      hours: changedContent.time.hours,
-                      minutes: changedContent.time.minutes,
+                      hours: changedFriendContent.time.hours,
+                      minutes: changedFriendContent.time.minutes,
                     },
                   }
                 : friendChat.lastMessage,
@@ -588,7 +510,182 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
     setElem({});
   };
 
-  const handleResendMessage = () => {};
+  const handleDeleteMessageFromYourself = async (element) => {
+    const userChat = user.chats[chosenChat.details.id];
+
+    if (element.sender == "user") {
+      await setDoc(doc(firestore, "Users", user.details.id), {
+        ...user,
+        chats: {
+          ...user.chats,
+          [chosenChat.details.id]: {
+            ...userChat,
+            userMessages: [
+              ...userChat.userMessages.slice(
+                0,
+                user.chats[chosenChat.details.id].userMessages.indexOf(element)
+              ),
+              ...userChat.userMessages.slice(
+                user.chats[chosenChat.details.id].userMessages.indexOf(
+                  element
+                ) + 1,
+                userChat.userMessages.length
+              ),
+            ],
+            lastMessage:
+              content.length > 1
+                ? {
+                    text: content[content.length - 2].text,
+                    time: {
+                      hours: content[content.length - 2].time.hours,
+                      minutes: content[content.length - 2].time.hours,
+                    },
+                  }
+                : {
+                    text: content[0].text,
+                    time: {
+                      hours: content[0].time.hours,
+                      minutes: content[0].time.hours,
+                    },
+                  },
+          },
+        },
+      });
+    } else {
+      await setDoc(doc(firestore, "Users", user.details.id), {
+        ...user,
+        chats: {
+          ...user.chats,
+          [chosenChat.details.id]: {
+            ...userChat,
+            friendMessages: [
+              ...userChat.friendMessages.slice(
+                0,
+                user.chats[chosenChat.details.id].friendMessages.indexOf(
+                  element
+                )
+              ),
+              ...userChat.friendMessages.slice(
+                user.chats[chosenChat.details.id].friendMessages.indexOf(
+                  element
+                ) + 1,
+                userChat.friendMessages.length
+              ),
+            ],
+            lastMessage:
+              content.length > 1
+                ? {
+                    text: content[content.length - 2].text,
+                    time: {
+                      hours: content[content.length - 2].time.hours,
+                      minutes: content[content.length - 2].time.hours,
+                    },
+                  }
+                : {
+                    text: content[0].text,
+                    time: {
+                      hours: content[0].time.hours,
+                      minutes: content[0].time.hours,
+                    },
+                  },
+          },
+        },
+      });
+    }
+    const res = await getDoc(doc(firestore, "Users", userId));
+    const user2 = res.data();
+
+    setUser(user2);
+  };
+
+  const handleResendMessage = async () => {
+    const now = new Date();
+
+    await setDoc(doc(firestore, "Users", resendFriend.details.id), {
+      ...resendFriend,
+      chats: {
+        ...resendFriend.chats,
+        [user.details.id]: {
+          ...resendFriend.chats[user.details.id],
+          friendMessages: [
+            ...resendFriend.chats[user.details.id].friendMessages,
+            {
+              sender: "friend",
+              text: elem.text,
+              changed: false,
+              resent: true,
+              resentFrom: chosenChat.details.name.split(" ").slice(1, 2),
+              time: {
+                year: now.getFullYear(),
+                month: now.getMonth(),
+                date: now.getDate(),
+                day: now.getDay(),
+                hours: now.getHours(),
+                minutes: now.getMinutes(),
+                ms: now.getTime(),
+              },
+            },
+          ],
+          lastMessage: {
+            text: elem.text,
+            time: {
+              hours: now.getHours(),
+              minutes: now.getMinutes(),
+            },
+          },
+        },
+      },
+    });
+
+    await setDoc(doc(firestore, "Users", user.details.id), {
+      ...user,
+      chats: {
+        ...user.chats,
+        [resendFriend.details.id]: {
+          ...user.chats[resendFriend.details.id],
+          userMessages: [
+            ...user.chats[resendFriend.details.id].userMessages,
+            {
+              sender: "user",
+              text: elem.text,
+              changed: false,
+              resent: true,
+              resentFrom: chosenChat.details.name.split(" ").slice(1, 2),
+              time: {
+                year: now.getFullYear(),
+                month: now.getMonth(),
+                date: now.getDate(),
+                day: now.getDay(),
+                hours: now.getHours(),
+                minutes: now.getMinutes(),
+                ms: now.getTime(),
+              },
+            },
+          ],
+          lastMessage: {
+            text: elem.text,
+            time: {
+              hours: now.getHours(),
+              minutes: now.getMinutes(),
+            },
+          },
+        },
+      },
+    });
+
+    const res = await getDoc(doc(firestore, "Users", userId));
+    const user2 = res.data();
+
+    const res1 = await getDoc(doc(firestore, "Users", resendFriend.details.id));
+    const resendFriend1 = res1.data();
+
+    setUser(user2);
+    setChosenChat(resendFriend1);
+    setIndex(resendFriend.details.id);
+
+    setResendMessage(false);
+    setResendFriendMessage(false);
+  };
 
   const overflow = (text, arr = []) => {
     if (text.length > 57) {
@@ -795,20 +892,15 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                       >
                         {[
                           {
-                            text: "delete message",
-                            func: handleDeleteMessage,
-                          },
-                          {
-                            text: "change message",
-                            func: () => {
-                              setChangedMessage(obj.text);
-                              setChangeMessage(true);
-                              setElem(obj);
-                            },
+                            text: "delete message from yourself",
+                            func: handleDeleteMessageFromYourself,
                           },
                           {
                             text: "resend the message",
-                            func: handleResendMessage,
+                            func: (obj) => {
+                              setResendFriendMessage(true);
+                              setElem(obj);
+                            },
                           },
                         ].map((elem, index) => (
                           <h2
@@ -837,14 +929,39 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                     >
                       {obj.text.length > 57 ? (
                         overflow(obj.text).map((text, index) => (
-                          <p key={index} className="font-regular text-[13px]">
+                          <p
+                            key={index}
+                            className="font-regular text-[13px] flex flex-row gap-2"
+                          >
+                            {obj.text == "Deleted message" ? (
+                              <img
+                                src="/black_deleted.png"
+                                alt="deleted"
+                                className="w-6 h-6 z-40"
+                              />
+                            ) : (
+                              ""
+                            )}
                             {text}
                           </p>
                         ))
                       ) : (
-                        <p className="font-regular text-[13px]">{obj.text}</p>
+                        <p className="font-regular text-[13px] flex flex-row gap-2">
+                          {obj.text == "Deleted message" ? (
+                            <img
+                              src="/black_deleted.png"
+                              alt="deleted"
+                              className="w-6 h-6 z-40"
+                            />
+                          ) : (
+                            ""
+                          )}
+                          {obj.text}
+                        </p>
                       )}
                       <p className="font-lexend font-thin text-[12px] mt-1 pl-8 z-20 text-gray-500 self-end justify-self-end ">
+                        {obj.changed ? "(changed)  " : ""}
+                        {obj.resent ? `(resend from ${obj.resentFrom})  ` : ""}
                         {`${
                           obj.time.date < 10
                             ? "0" + obj.time.date
@@ -860,23 +977,96 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                         })`}
                       </p>
                     </motion.div>
-                    <Dialog open={changeMessage}>
-                      <DialogHeader>Change The Message</DialogHeader>
+                    <Dialog open={resendFriendMessage}>
+                      <DialogHeader>Resend The Message</DialogHeader>
                       <DialogBody>
-                        <div className="w-full flex gap-2 items-end justify-start"></div>
+                        <div className="w-full flex gap-2 items-end justify-center ">
+                          <div className="self-end flex flex-col h-auto max-w-[50%] bg-white text-black shadow-md rounded-lg rounded-br-none font-lexend px-3 pt-2 pb-3">
+                            {elem.text != undefined && elem.text.length > 57 ? (
+                              overflow(elem.text).map((text, index) => (
+                                <p
+                                  key={index}
+                                  className="font-regular text-[13px] flex flex-row gap-2"
+                                >
+                                  {text}
+                                </p>
+                              ))
+                            ) : (
+                              <p className="font-regular text-[13px] flex flex-row gap-2">
+                                {elem != undefined ? elem.text : ""}
+                              </p>
+                            )}
+                            {elem.time != undefined ? (
+                              <p className="font-lexend font-thin text-[12px] mt-1 pl-8 z-20 text-black self-end justify-self-end ">
+                                {`${
+                                  elem.time.date < 10
+                                    ? "0" + elem.time.date
+                                    : elem.time.date
+                                }.${
+                                  elem.time.month < 10
+                                    ? "0" + elem.time.month
+                                    : elem.time.month
+                                }.${elem.time.year} (${elem.time.hours}:${
+                                  elem.time.minutes < 10
+                                    ? "0" + elem.time.minutes
+                                    : elem.time.minutes
+                                })`}
+                              </p>
+                            ) : (
+                              ""
+                            )}
+                          </div>
+                        </div>
+                        <motion.div
+                          ref={scope}
+                          className={`flex flex-col mt-3 ${
+                            focused1 ? "z-20" : ""
+                          }`}
+                        >
+                          <motion.input
+                            type="text"
+                            value={inputValue1}
+                            onChange={handleInputChange1}
+                            onFocus={handleFocus1}
+                            onBlur={handleBlur1}
+                            placeholder="Search"
+                            className="ring-1 ring-gray-400 rounded-sm h-9 pl-8"
+                          />
+                          <img
+                            alt="search"
+                            src="/search1.png"
+                            className="absolute z-20 w-6 h-6 mt-1 ml-1"
+                          />
+                          <motion.ul
+                            initial={{ opacity: 0 }}
+                            id="object"
+                            className="ring-1 ring-green-500 bg-white max-h-80 overflow-y-auto scroll-ul rounded-br-md rounded-bl-md"
+                          >
+                            {filteredOptions1.map((value, index) => (
+                              <li
+                                key={index}
+                                id={value}
+                                onClick={handleClick1}
+                                className="px-4 py-3 border-t-2 hover:bg-green-300"
+                              >
+                                {value}
+                              </li>
+                            ))}
+                          </motion.ul>
+                        </motion.div>
                       </DialogBody>
                       <DialogFooter className="flex flex-row gap-5">
                         <button
                           className="w-[200px] h-[50px] p-2 font-lexend font-medium text-[18px] rounded-lg bg-red-400 text-white ring-1 ring-black hover:shadow-xl active:shadow-sm "
-                          onClick={() => setChangeMessage(false)}
+                          onClick={() => setResendFriendMessage(false)}
                         >
                           Close
                         </button>
                         <button
                           className="w-[200px] h-[50px] p-2 font-lexend font-medium text-[18px] rounded-lg bg-green-200 text-green-500 ring-1 ring-black hover:shadow-xl active:shadow-sm "
-                          onClick={handleChangeMessage}
+                          onClick={handleResendMessage}
                         >
-                          Change
+                          Resend
                         </button>
                       </DialogFooter>
                     </Dialog>
@@ -905,15 +1095,39 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                     >
                       {obj.text.length > 57 ? (
                         overflow(obj.text).map((text, index) => (
-                          <p key={index} className="font-regular text-[13px]">
+                          <p
+                            key={index}
+                            className="font-regular text-[13px] flex flex-row gap-2"
+                          >
+                            {obj.text == "Deleted message" ? (
+                              <img
+                                src="/deleted.png"
+                                alt="deleted"
+                                className="w-6 h-6 z-40"
+                              />
+                            ) : (
+                              ""
+                            )}
                             {text}
                           </p>
                         ))
                       ) : (
-                        <p className="font-regular text-[13px]">{obj.text}</p>
+                        <p className="font-regular text-[13px] flex flex-row gap-2">
+                          {obj.text == "Deleted message" ? (
+                            <img
+                              src="/deleted.png"
+                              alt="deleted"
+                              className="w-6 h-6 z-40"
+                            />
+                          ) : (
+                            ""
+                          )}
+                          {obj.text}
+                        </p>
                       )}
                       <p className="font-lexend font-thin text-[12px] mt-1 pl-8 z-20 text-white self-end justify-self-end ">
                         {obj.changed ? "(changed)  " : ""}
+                        {obj.resent ? `(resend from ${obj.resentFrom})  ` : ""}
                         {`${
                           obj.time.date < 10
                             ? "0" + obj.time.date
@@ -944,38 +1158,55 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                       >
                         {[
                           {
-                            text: "delete message",
-                            func: handleDeleteMessage,
+                            text: "delete message from yourself",
+                            func: handleDeleteMessageFromYourself,
                           },
-                          {
-                            text: "change message",
-                            func: () => {
-                              setChangeMessage(true);
-                              setChangedMessage(obj.text);
-                              setElem(obj);
-                            },
-                          },
-                          {
-                            text: "resend the message",
-                            func: handleResendMessage,
-                          },
-                        ].map((elem, index) => (
-                          <h2
-                            key={index}
-                            className={`px-3 py-3 font-lexend fonr-medium bg-green-500 text-white ${
-                              index != 3 ? "border-b-2" : ""
-                            } ${
-                              index == 0
-                                ? "rounded-tl-md rounded-tr-md"
-                                : index == 2
-                                  ? "rounded-bl-md rounded-br-md"
-                                  : ""
-                            }`}
-                            onClick={() => elem.func(obj)}
-                          >
-                            {elem.text}
-                          </h2>
-                        ))}
+                          obj.text != "Deleted message"
+                            ? {
+                                text: "delete message from both",
+                                func: handleDeleteMessage,
+                              }
+                            : {},
+                          obj.text != "Deleted message"
+                            ? {
+                                text: "change message",
+                                func: () => {
+                                  setChangeMessage(true);
+                                  setChangedMessage(obj.text);
+                                  setElem(obj);
+                                },
+                              }
+                            : {},
+                          obj.text != "Deleted message"
+                            ? {
+                                text: "resend the message",
+                                func: () => {
+                                  setResendMessage(true);
+                                  setElem(obj);
+                                },
+                              }
+                            : {},
+                        ].map((elem, index) =>
+                          elem.text != undefined ? (
+                            <h2
+                              key={index}
+                              className={`px-3 py-3 font-lexend fonr-medium bg-green-500 text-white ${
+                                index != 3 ? "border-b-2" : ""
+                              } ${
+                                index == 0
+                                  ? "rounded-tl-md rounded-tr-md"
+                                  : index == 2
+                                    ? "rounded-bl-md rounded-br-md"
+                                    : ""
+                              }`}
+                              onClick={() => elem.func(obj)}
+                            >
+                              {elem.text}
+                            </h2>
+                          ) : (
+                            ""
+                          )
+                        )}
                       </motion.div>
                     ) : (
                       ""
@@ -994,8 +1225,7 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                               onChange={(e) =>
                                 setChangedMessage(e.target.value)
                               }
-                              className="font-regular text-[13px] text-white bg-green-500 w-full py-3 pl-2
-                              "
+                              className="font-regular text-[13px] text-white bg-green-500 w-full py-3 pl-2"
                             />
                           </div>
                         </div>
@@ -1012,6 +1242,99 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                           onClick={handleChangeMessage}
                         >
                           Change
+                        </button>
+                      </DialogFooter>
+                    </Dialog>
+                    <Dialog open={resendMessage}>
+                      <DialogHeader>Resend The Message</DialogHeader>
+                      <DialogBody>
+                        <div className="w-full flex gap-2 items-end justify-center ">
+                          <div className="self-end flex flex-col h-auto max-w-[50%] bg-green-500 text-white shadow-md rounded-lg rounded-br-none font-lexend px-3 pt-2 pb-3">
+                            {elem.text != undefined && elem.text.length > 57 ? (
+                              overflow(elem.text).map((text, index) => (
+                                <p
+                                  key={index}
+                                  className="font-regular text-[13px] flex flex-row gap-2"
+                                >
+                                  {text}
+                                </p>
+                              ))
+                            ) : (
+                              <p className="font-regular text-[13px] flex flex-row gap-2">
+                                {elem != undefined ? elem.text : ""}
+                              </p>
+                            )}
+                            {elem.time != undefined ? (
+                              <p className="font-lexend font-thin text-[12px] mt-1 pl-8 z-20 text-white self-end justify-self-end ">
+                                {`${
+                                  elem.time.date < 10
+                                    ? "0" + elem.time.date
+                                    : elem.time.date
+                                }.${
+                                  elem.time.month < 10
+                                    ? "0" + elem.time.month
+                                    : elem.time.month
+                                }.${elem.time.year} (${elem.time.hours}:${
+                                  elem.time.minutes < 10
+                                    ? "0" + elem.time.minutes
+                                    : elem.time.minutes
+                                })`}
+                              </p>
+                            ) : (
+                              ""
+                            )}
+                          </div>
+                        </div>
+                        <motion.div
+                          ref={scope}
+                          className={`flex flex-col mt-3 ${
+                            focused1 ? "z-20" : ""
+                          }`}
+                        >
+                          <motion.input
+                            type="text"
+                            value={inputValue1}
+                            onChange={handleInputChange1}
+                            onFocus={handleFocus1}
+                            onBlur={handleBlur1}
+                            placeholder="Search"
+                            className="ring-1 ring-gray-400 rounded-sm h-9 pl-8"
+                          />
+                          <img
+                            alt="search"
+                            src="/search1.png"
+                            className="absolute z-20 w-6 h-6 mt-1 ml-1"
+                          />
+                          <motion.ul
+                            initial={{ opacity: 0 }}
+                            id="object"
+                            className="ring-1 ring-green-500 bg-white max-h-80 overflow-y-auto scroll-ul rounded-br-md rounded-bl-md"
+                          >
+                            {filteredOptions1.map((value, index) => (
+                              <li
+                                key={index}
+                                id={value}
+                                onClick={handleClick1}
+                                className="px-4 py-3 border-t-2 hover:bg-green-300"
+                              >
+                                {value}
+                              </li>
+                            ))}
+                          </motion.ul>
+                        </motion.div>
+                      </DialogBody>
+                      <DialogFooter className="flex flex-row gap-5">
+                        <button
+                          className="w-[200px] h-[50px] p-2 font-lexend font-medium text-[18px] rounded-lg bg-red-400 text-white ring-1 ring-black hover:shadow-xl active:shadow-sm "
+                          onClick={() => setResendMessage(false)}
+                        >
+                          Close
+                        </button>
+                        <button
+                          className="w-[200px] h-[50px] p-2 font-lexend font-medium text-[18px] rounded-lg bg-green-200 text-green-500 ring-1 ring-black hover:shadow-xl active:shadow-sm "
+                          onClick={handleResendMessage}
+                        >
+                          Resend
                         </button>
                       </DialogFooter>
                     </Dialog>

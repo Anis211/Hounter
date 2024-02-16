@@ -1,4 +1,4 @@
-export default function Yellow() {
+export default function DarkYellow() {
   return (
     <div
       style={{
@@ -7,8 +7,8 @@ export default function Yellow() {
         transform: "rotate(90deg)",
         transformOrigin: "0 0",
         opacity: 0.3,
-        background: "#FFFA82",
-        filter: "blur(120px)",
+        background: "#C8FF82",
+        filter: "blur(90px)",
         zIndex: -1,
       }}
     />

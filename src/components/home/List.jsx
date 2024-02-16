@@ -4,6 +4,8 @@ import { useAnimate, motion, useInView } from "framer-motion";
 import { Avatar, Button } from "@material-tailwind/react";
 import Link from "next/link";
 import useUser from "@/details/user";
+import Yellow from "@/details/yellow";
+import Orange from "@/details/orange";
 
 export default function List({ popular, newH }) {
   useEffect(() => {
@@ -93,7 +95,7 @@ export default function List({ popular, newH }) {
   };
 
   const handleClick = async (event) => {
-    const id = event.target.id;
+    const id = event.target.id != undefined ? event.target.id : event;
 
     const change = async () => {
       changeChosen(id);
@@ -102,7 +104,7 @@ export default function List({ popular, newH }) {
     const changeList = async () => {
       setList(
         [...randomMerge(popular, newH)].filter(
-          (elem) => elem.deal.type == event.target.id && elem.id != uid
+          (elem) => elem.deal.type == id && elem.id != uid
         )
       );
     };
@@ -131,17 +133,23 @@ export default function List({ popular, newH }) {
   };
 
   return (
-    <div className="pr-32 w-[100vw] h-auto flex flex-col gap-[40px]">
-      <div className="flex flex-row w-full">
-        <div className="font-lexend flex flex-col gap-[12px] justify-start">
-          <p className=" font-medium text-[#F59E0B] text-[16px]">
+    <div className="xl:pr-32 md:pr-16 pr-10 w-[100vw] h-auto flex flex-col md:gap-[40px]">
+      <div className="absolute left-[105vw] top-[225vh] z-[-1]">
+        <Yellow />
+      </div>
+      <div className="absolute left-[100vw] top-[200vh] z-[-2]">
+        <Orange />
+      </div>
+      <div className="flex flex-col gap-5 md:gap-0 md:flex-row w-[90vw] md:w-[100vw] items-center">
+        <div className="font-lexend flex flex-col md:gap-3 gap-1 md:justify-start">
+          <p className=" font-medium text-[#F59E0B] lg:text-[16px] text-sm">
             -- Our Recomendation
           </p>
-          <h1 className="font-semibold text-[32px] text-[#1B1C57]">
+          <h1 className="font-semibold lg:text-3xl text-2xl text-[#1B1C57]">
             Featured House
           </h1>
         </div>
-        <div className="mx-auto flex flex-row gap-[32px] place-items-center ">
+        <div className="mx-auto flex flex-row md:gap-8 gap-4 place-items-center">
           {["House", "Villa", "Apartment"].map((name, index) => {
             return (
               <Button
@@ -149,7 +157,7 @@ export default function List({ popular, newH }) {
                 id={name.toLowerCase()}
                 className={`${
                   chosen == name.toLowerCase() ? green_button : normal_button
-                } flex flex-row`}
+                } flex flex-row pr-8 md:pr-6 lg:pr-7`}
                 onClick={handleClick}
               >
                 <img
@@ -158,12 +166,12 @@ export default function List({ popular, newH }) {
                   src={`/${
                     chosen == name.toLowerCase() ? "green" : "gray"
                   }_${name.toLowerCase()}.png`}
-                  className="w-[24px] h-[24px] mr-[4px]"
+                  className="md:w-[24px] md:h-[24px] md:mr-[4px] w-5 h-5"
                   onClick={handleClick}
                 />
                 <p
                   id={name.toLowerCase()}
-                  className="my-auto capitalize font-lexend font-medium text-[15px]"
+                  className="my-auto capitalize font-lexend font-medium md:text-[15px] text-sm"
                   onClick={handleClick}
                 >
                   {name}
@@ -173,7 +181,7 @@ export default function List({ popular, newH }) {
           })}
         </div>
       </div>
-      <motion.div ref={scope}>
+      <motion.div ref={scope} className="w-full">
         <motion.div
           ref={ref}
           className="mt-8 flex flex-row gap-10 overflow-x-scroll overflow-y-hidden my-scrollbar"
@@ -201,7 +209,7 @@ export default function List({ popular, newH }) {
                   },
                 }}
                 key={index}
-                className="flex flex-col gap-3 h-auto justify-between ml-2 mb-5 z-20"
+                className="flex flex-col gap-3 h-auto justify-between md:ml-2 mb-5 z-20"
               >
                 <div className="w-80 h-96 group group-last:rotate-45">
                   <Link href={`/details/${obj.deal.propertyName}?id=${obj.id}`}>

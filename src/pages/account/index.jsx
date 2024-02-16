@@ -6,7 +6,7 @@ import { firestore } from "../../../firebase/clientApp";
 
 export default function Account({ details, id }) {
   return (
-    <div className="w-full h-auto">
+    <div className="w-full h-[100vh]">
       <div className="fixed left-64 bottom-[60vh] z-[-1]">
         <Vector />
       </div>
