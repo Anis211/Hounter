@@ -28,13 +28,18 @@
   }
 }
 
-html {
+html,
+body {
   margin: 0;
   padding: 0;
-  height: auto;
-  width: 100%;
   overflow-x: hidden;
   scroll-behavior: smooth;
+}
+
+@media (min-width: 320px) and (max-width: 768px) {
+  body {
+    overflow-x: hidden !important;
+  }
 }
 
 html::-webkit-scrollbar {

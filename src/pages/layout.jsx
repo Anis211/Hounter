@@ -1,12 +1,27 @@
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { LazyMotion, domAnimation } from "framer-motion";
+import useUser from "@/details/user";
+import { useEffect } from "react";
 
 export default function Layout({ children }) {
+  useEffect(() => {
+    useUser.persist.rehydrate();
+  }, []);
+
+  const theme = useUser((state) => state.theme);
+
   return (
-    <div className="xl:w-screen-2xl h-auto flex flex-col 2xl:px-28 lg:px-20 md:px-10 pr-6 pl-5 md:py-12 py-6 overflow-x-hidden">
-      <Navbar />
-      {children}
-      <Footer />
-    </div>
+    <LazyMotion features={domAnimation}>
+      <div
+        className={`h-full w-[100svw] flex flex-col 2xl:px-28 md:py-12 py-6 overflow-x-hidden ${
+          theme == "light" ? "bg-transparent" : "bg-[#10274F]"
+        }`}
+      >
+        <Navbar />
+        {children}
+        <Footer />
+      </div>
+    </LazyMotion>
   );
 }

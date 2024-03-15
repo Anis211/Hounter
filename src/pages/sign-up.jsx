@@ -7,7 +7,7 @@ import { useCreateUserWithEmailAndPassword } from "react-firebase-hooks/auth";
 import { auth, firestore } from "../../firebase/clientApp";
 import { doc, collection, setDoc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { motion, useInView } from "framer-motion";
+import { m, useInView } from "framer-motion";
 import Link from "next/link";
 import useUser from "@/details/user";
 
@@ -127,7 +127,7 @@ export default function SignUp({ users }) {
       <div className="absolute left-[38vw] bottom-[94vh]">
         <Vector />
       </div>
-      <motion.div
+      <m.div
         ref={ref1}
         initial={{ opacity: 0, y: -60 }}
         animate={inView1 ? { opacity: [0, 0.5, 1], y: [-60, 0, 0] } : {}}
@@ -142,8 +142,8 @@ export default function SignUp({ users }) {
         <p className="font-lexend font-semibold text-[#047857] text-[14px]">
           You have signed up successfully!
         </p>
-      </motion.div>
-      <motion.div
+      </m.div>
+      <m.div
         ref={ref2}
         initial={{ opacity: 0, y: -60 }}
         animate={inView2 ? { opacity: [0, 0.5, 1], y: [-60, 0, 0] } : {}}
@@ -159,22 +159,21 @@ export default function SignUp({ users }) {
         <p className="font-lexend font-semibold text-gray-50 text-[14px]">
           {error}
         </p>
-      </motion.div>
-      <div className="w-[460px] h-auto px-8 pl-12 pt-10 pb-14 self-center mx-auto bg-[#D1FAE5] mt-[8%] text-center shadow-lg rounded-[16px]">
+      </m.div>
+      <div className="lg:w-[460px] w-full z-20 h-auto lg:px-8 lg:pl-12 pt-10 pb-14 lg:self-center lg:mx-auto bg-[#D1FAE5] mt-[8%] text-center shadow-lg rounded-[16px]">
         <div className="w-32 mb-6 mx-auto">
           <h2 className="font-lexend font-bold text-[30px] text-[#047857] mb-1">
             Sign Up
           </h2>
-          <img alt="svg" src="/line.svg" className="mx-auto w-full" />
         </div>
         <input
           type="email"
           placeholder="Email: "
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className={`w-80 h-12 rounded-lg mt-5 mb-[15px] pl-[10px] focus:shadow-lg hover:shadow-md`}
+          className={`lg:w-80 w-[90%] h-12 rounded-lg mt-5 mb-[15px] pl-[10px] focus:shadow-lg hover:shadow-md`}
         />
-        <div className="flex flex-row relative left-8">
+        <div className="flex flex-row relative lg:left-8 left-5">
           <input
             ref={password1}
             type={showPassword3 ? "text" : "password"}
@@ -205,7 +204,7 @@ export default function SignUp({ users }) {
             />
           </div>
         </div>
-        <div className="flex flex-row relative left-8">
+        <div className="flex flex-row relative lg:left-8 left-5">
           <input
             ref={password2}
             type={showPassword4 ? "text" : "password"}

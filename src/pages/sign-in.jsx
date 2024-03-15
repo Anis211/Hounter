@@ -4,8 +4,9 @@ import Vector from "@/details/vector1";
 import Yellow from "@/details/yellow";
 import { Checkbox, Button } from "@material-tailwind/react";
 import { useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
-import { auth } from "../../firebase/clientApp";
-import { motion, useInView } from "framer-motion";
+import { auth, firestore } from "../../firebase/clientApp";
+import { getDoc, doc } from "firebase/firestore";
+import { m, useInView } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import useUser from "@/details/user";
@@ -17,6 +18,8 @@ export default function SignIn() {
 
   const setUser = useUser((state) => state.setUser);
   const [signInWithEmailAndPassword] = useSignInWithEmailAndPassword(auth);
+
+  const theme = useUser((state) => state.theme);
 
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -48,15 +51,21 @@ export default function SignIn() {
   const handleSubmit = async () => {
     try {
       await signInWithEmailAndPassword(email, password);
+
       const user = auth.currentUser;
       const id = user.uid;
+      const res = await getDoc(doc(firestore, "Users", id));
 
-      await setUser(id);
+      if (res.data() == undefined) {
+        throw new Error("The user is not registered (try to sign up first)");
+      } else {
+        await setUser(id);
 
-      setIsSuccess(true);
-      setTimeout(() => {
-        router.push(`/account?id=${id}`);
-      }, 1000);
+        setIsSuccess(true);
+        setTimeout(() => {
+          router.push(`/account?id=${id}`);
+        }, 1000);
+      }
     } catch (e) {
       setIsError(true);
       setError(e.message);
@@ -72,14 +81,18 @@ export default function SignIn() {
   };
 
   return (
-    <div className="w-full h-[80vh] flex overflow-hidden">
+    <div
+      className={`w-full h-[80vh] flex overflow-hidden ${
+        theme != "dark" ? "" : "bg-[#10274F]"
+      }`}
+    >
       <div className="absolute left-64 bottom-[60vh]">
         <Vector />
       </div>
       <div className="absolute left-[38vw] bottom-[94vh]">
         <Vector />
       </div>
-      <motion.div
+      <m.div
         ref={ref1}
         initial={{ opacity: 0, y: -60 }}
         animate={inView1 ? { opacity: [0, 0.5, 1], y: [-60, 0, 0] } : {}}
@@ -94,8 +107,8 @@ export default function SignIn() {
         <p className="font-lexend font-semibold text-[#047857] text-[14px]">
           You have signed in successfully!
         </p>
-      </motion.div>
-      <motion.div
+      </m.div>
+      <m.div
         ref={ref2}
         initial={{ opacity: 0, y: -60 }}
         animate={inView2 ? { opacity: [0, 0.5, 1], y: [-60, 0, 0] } : {}}
@@ -111,8 +124,8 @@ export default function SignIn() {
         <p className="font-lexend font-semibold text-gray-50 text-[14px]">
           {error}
         </p>
-      </motion.div>
-      <div className="2xl:w-[30vw] w-full lg:w-[60vw] md:w-[60vw] h-auto px-8 pt-10 pb-14 self-center mx-auto bg-[#D1FAE5] mt-[10%] text-center shadow-lg rounded-[16px]">
+      </m.div>
+      <div className="2xl:w-[30vw] w-full lg:w-[60vw] md:w-[60vw] h-auto px-8 pt-10 pb-14 self-center mx-auto bg-[#D1FAE5] mt-[10%] text-center shadow-lg rounded-[16px] z-10">
         <div className="w-32 mb-6 mx-auto">
           <h2 className="font-lexend font-bold xl:text-[30px] text-2xl text-[#047857] mb-1">
             Sign In

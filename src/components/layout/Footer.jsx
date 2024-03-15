@@ -10,13 +10,20 @@ export default function Footer() {
   }, []);
 
   const setName = useUser((state) => state.setName);
+  const theme = useUser((state) => state.theme);
 
   return (
-    <div className="mt-28 flex lg:flex-row flex-col">
+    <div className="mt-28 flex lg:flex-row flex-col px-4 md:px-10 lg:px-14">
       <div className="flex flex-col gap-10">
         <div className="p-1.5 flex flex-row gap-12 flex-2 max-w-20">
           <Logo />
-          <h4 className="font-lexend font-bold size-[16px]">Hounter</h4>
+          <h4
+            className={`font-lexend font-bold size-[16px] ${
+              theme == "dark" ? "text-white" : ""
+            }`}
+          >
+            Hounter
+          </h4>
         </div>
         <p className="font-lexend font-regular lg:text-sm md:text-lg text-md text-[#626687] lg:max-w-[50%] w-full leading-6">
           We provide information about properties such as houses, villas and
@@ -24,12 +31,17 @@ export default function Footer() {
         </p>
         <div className="flex flex-row gap-6">
           {[
-            { src: "/facebook.png", link: "/" },
-            { src: "/twitter.png", link: "/" },
-            { src: "/instagram.png", link: "/" },
+            { src: "/facebook.webp", link: "/" },
+            { src: "/twitter.webp", link: "/" },
+            { src: "/instagram.webp", link: "/" },
           ].map((image, index) => (
             <Link key={index} href={image.link}>
-              <img src={image.src} alt="icon" className="w-6 h-6" />
+              <img
+                src={image.src}
+                loading="lazy"
+                alt="icon"
+                className="w-6 h-6"
+              />
             </Link>
           ))}
         </div>
@@ -90,7 +102,11 @@ export default function Footer() {
           },
         ].map((column, index) => (
           <div key={index} className="flex flex-col gap-5 font-lexend">
-            <h2 className="font-bold text-lg text-[#0E1735]">
+            <h2
+              className={`font-bold text-lg ${
+                theme == "dark" ? "text-white" : "text-[#0E1735]"
+              }`}
+            >
               {column.header}
             </h2>
             {column.body.map((body, index) => (

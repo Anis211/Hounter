@@ -9,11 +9,19 @@ import {
   DialogFooter,
 } from "@material-tailwind/react";
 import { useState, useEffect, useRef } from "react";
-import { motion, useAnimate, AnimatePresence, useInView } from "framer-motion";
+import { m, useAnimate, AnimatePresence, useInView } from "framer-motion";
 import { firestore } from "../../firebase/clientApp";
 import { getDoc, doc, setDoc } from "firebase/firestore";
+import useUser from "@/details/user";
 
 export default function Messanger({ user1, friends1, friendId, userId }) {
+  useEffect(() => {
+    useUser.persist.rehydrate;
+  });
+
+  const [open, setOpen] = useState(false);
+  const theme = useUser((state) => state.theme);
+
   const ref = useRef(null);
   const inView = useInView(ref, { once: true });
 
@@ -127,6 +135,8 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
         ...user.chats[friend.details.id].friendMessages,
       ].sort((m1, m2) => (m1.time.ms > m2.time.ms ? 1 : -1))
     );
+
+    setOpen(false);
   };
 
   const handleInputChange = (e) => {
@@ -710,23 +720,45 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
       </div>
       <div
         ref={ref}
-        className="mt-16 h-[90vh] w-full flex flex-row ring-1 ring-black rounded-sm bg-white"
+        className={`mt-16 h-[90vh] w-full flex flex-row rounded-sm ${
+          theme != "dark" ? "bg-white ring-black ring-1" : "bg-[#1B3C73]"
+        } `}
       >
-        <div className="w-1/4 h-full flex flex-col gap-5 px-3 border-r-2">
+        <div
+          className={`lg:w-1/4 h-full ${
+            open ? "w-full visible" : "hidden"
+          } lg:flex flex-col gap-5 px-3 ${theme != "dark" ? "border-r-2" : ""}`}
+        >
           <div className="h-[18%] flex flex-col gap-6">
-            <div className="flex flex-row gap-5 items-center pt-4">
+            <div className="flex flex-row gap-5 items-center justify-between lg:justify-start pt-4 w-full lg:w-auto">
               <Avatar
                 src={user.avatar}
                 alt="icon"
                 className="ring-1 bg-[#D1FAE5] w-10 h-10"
               />
-              <h2 className="font-lexend font-semibold text-[20px]">Chats</h2>
+              <h2
+                className={`font-lexend font-semibold text-[20px] ${
+                  theme == "dark" ? "text-white" : "text-black"
+                }`}
+              >
+                Chats
+              </h2>
+              <button
+                className="w-8 h-8 self-right lg:hidden"
+                onClick={() => setOpen(false)}
+              >
+                <img
+                  src={theme != "dark" ? "/chat-black.png" : "/chat-white.png"}
+                  loading="lazy"
+                  alt="chat"
+                />
+              </button>
             </div>
-            <motion.div
+            <m.div
               ref={scope}
               className={`flex flex-col mt-3 ${focused ? "z-20" : ""}`}
             >
-              <motion.input
+              <m.input
                 type="text"
                 value={inputValue}
                 onChange={handleInputChange}
@@ -737,10 +769,11 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
               />
               <img
                 alt="search"
-                src="/search1.png"
+                src="/search1.webp"
+                loading="lazy"
                 className="absolute z-20 w-6 h-6 mt-1 ml-1"
               />
-              <motion.ul
+              <m.ul
                 initial={{ opacity: 0 }}
                 id="object"
                 className="ring-1 ring-green-500 bg-white max-h-80 overflow-y-auto scroll-ul rounded-br-md rounded-bl-md"
@@ -755,8 +788,8 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                     {value}
                   </li>
                 ))}
-              </motion.ul>
-            </motion.div>
+              </m.ul>
+            </m.div>
           </div>
           <div
             className={`h-[82%] flex flex-col gap-2 ${
@@ -818,7 +851,9 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
           </div>
         </div>
         <div
-          className="w-3/4 flex flex-col justify-between"
+          className={`lg:w-3/4 lg:flex ${
+            open ? "hidden" : "visible w-full"
+          } flex-col justify-between`}
           onClick={() => {
             content.map((elem, index) =>
               context[index] == true
@@ -834,31 +869,58 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
             );
           }}
         >
-          <div className=" h-[10%] flex flex-row w-full justify-between border-b-2">
+          <div
+            className={`h-[10%] flex flex-row w-full justify-between ${
+              theme != "dark" ? "border-b-2" : ""
+            }`}
+          >
             <div className="w-auto flex flex-row items-center ml-4">
               <Avatar
                 alt="avatar"
                 src={chosenChat.avatar}
                 className="w-12 h-12"
               />
-              <div className="flex flex-col pl-2 font-lexend z-20">
-                <h2 className="font-medium text-[16px]">
+              <div className="flex flex-col pl-2 font-lexend z-10">
+                <h2
+                  className={`font-medium text-[16px] ${
+                    theme == "dark" ? "text-white" : ""
+                  }`}
+                >
                   {chosenChat.details.name.split(" ").slice(1, 3).join(" ")}
                 </h2>
-                <p className="font-regular text-[12px] text-gray-700">
+                <p
+                  className={`font-regular text-[12px] ${
+                    theme == "dark" ? "text-white" : "text-gray-700"
+                  }`}
+                >
                   Online now
                 </p>
               </div>
             </div>
             <div className="w-20 flex items-center justify-end">
-              <img src="/dots.png" alt="dots" className="w-5 h-5 mr-6" />
+              <button
+                className="w-8 h-8 mr-4 lg:hidden"
+                onClick={() => setOpen(true)}
+              >
+                <img
+                  src={
+                    theme != "dark" ? "/users-black.png" : "/users-white.png"
+                  }
+                  loading="lazy"
+                  alt="users"
+                />
+              </button>
             </div>
           </div>
-          <div className="bg-[#F6F7F9] w-full h-[80%] flex flex-col gap-4 pt-4 pb-20 border-b-2 overflow-y-scroll no-scroll">
+          <div
+            className={` ${
+              theme == "dark" ? "bg-[#40679E]" : "bg-[#F6F7F9] border-b-2"
+            } w-full h-[80%] flex flex-col gap-4 pt-4 pb-20 overflow-y-scroll no-scroll`}
+          >
             {content.map((obj, index) =>
               obj.sender == "friend" ? (
                 <AnimatePresence key={index}>
-                  <motion.div
+                  <m.div
                     initial={{ opacity: 0 }}
                     animate={inView ? { opacity: 1 } : ""}
                     exit={{ opacity: 0 }}
@@ -874,11 +936,11 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                       setContext((prev) => ({ ...prev, [index]: true }));
                     }}
                   >
-                    <motion.div layout className="w-12 h-12 self-end">
+                    <m.div layout className="w-12 h-12 self-end">
                       <Avatar alt="avatar" src={chosenChat.avatar} />
-                    </motion.div>
+                    </m.div>
                     {context[index] == true ? (
-                      <motion.div
+                      <m.div
                         initial={{ opacity: 0, y: 60 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 60 }}
@@ -919,11 +981,11 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                             {elem.text}
                           </h2>
                         ))}
-                      </motion.div>
+                      </m.div>
                     ) : (
                       ""
                     )}
-                    <motion.div
+                    <m.div
                       layout
                       className="flex flex-col h-auto max-w-[50%] bg-white shadow-md rounded-lg rounded-bl-none font-lexend px-3 pt-2 pb-3"
                     >
@@ -935,8 +997,9 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                           >
                             {obj.text == "Deleted message" ? (
                               <img
-                                src="/black_deleted.png"
+                                src="/black_deleted.webp"
                                 alt="deleted"
+                                loading="lazy"
                                 className="w-6 h-6 z-40"
                               />
                             ) : (
@@ -949,8 +1012,9 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                         <p className="font-regular text-[13px] flex flex-row gap-2">
                           {obj.text == "Deleted message" ? (
                             <img
-                              src="/black_deleted.png"
+                              src="/black_deleted.webp"
                               alt="deleted"
+                              loading="lazy"
                               className="w-6 h-6 z-40"
                             />
                           ) : (
@@ -976,7 +1040,7 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                             : obj.time.minutes
                         })`}
                       </p>
-                    </motion.div>
+                    </m.div>
                     <Dialog open={resendFriendMessage}>
                       <DialogHeader>Resend The Message</DialogHeader>
                       <DialogBody>
@@ -1017,13 +1081,13 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                             )}
                           </div>
                         </div>
-                        <motion.div
+                        <m.div
                           ref={scope}
                           className={`flex flex-col mt-3 ${
                             focused1 ? "z-20" : ""
                           }`}
                         >
-                          <motion.input
+                          <m.input
                             type="text"
                             value={inputValue1}
                             onChange={handleInputChange1}
@@ -1034,10 +1098,11 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                           />
                           <img
                             alt="search"
-                            src="/search1.png"
+                            src="/search1.webp"
+                            loading="lazy"
                             className="absolute z-20 w-6 h-6 mt-1 ml-1"
                           />
-                          <motion.ul
+                          <m.ul
                             initial={{ opacity: 0 }}
                             id="object"
                             className="ring-1 ring-green-500 bg-white max-h-80 overflow-y-auto scroll-ul rounded-br-md rounded-bl-md"
@@ -1052,8 +1117,8 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                                 {value}
                               </li>
                             ))}
-                          </motion.ul>
-                        </motion.div>
+                          </m.ul>
+                        </m.div>
                       </DialogBody>
                       <DialogFooter className="flex flex-row gap-5">
                         <button
@@ -1070,11 +1135,11 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                         </button>
                       </DialogFooter>
                     </Dialog>
-                  </motion.div>
+                  </m.div>
                 </AnimatePresence>
               ) : (
                 <AnimatePresence key={index}>
-                  <motion.div
+                  <m.div
                     initial={{ opacity: 0 }}
                     animate={inView ? { opacity: 1 } : ""}
                     transition={{ duration: 0.5, ease: "easeIn" }}
@@ -1089,7 +1154,7 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                       setContext((prev) => ({ ...prev, [index]: true }));
                     }}
                   >
-                    <motion.div
+                    <m.div
                       layout
                       className="self-end flex flex-col h-auto max-w-[50%] bg-green-500 text-white shadow-md rounded-lg rounded-br-none font-lexend px-3 pt-2 pb-3"
                     >
@@ -1101,8 +1166,9 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                           >
                             {obj.text == "Deleted message" ? (
                               <img
-                                src="/deleted.png"
+                                src="/deleted.webp"
                                 alt="deleted"
+                                loading="lazy"
                                 className="w-6 h-6 z-40"
                               />
                             ) : (
@@ -1115,8 +1181,9 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                         <p className="font-regular text-[13px] flex flex-row gap-2">
                           {obj.text == "Deleted message" ? (
                             <img
-                              src="/deleted.png"
+                              src="/deleted.webp"
                               alt="deleted"
+                              loading="lazy"
                               className="w-6 h-6 z-40"
                             />
                           ) : (
@@ -1142,9 +1209,9 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                             : obj.time.minutes
                         })`}
                       </p>
-                    </motion.div>
+                    </m.div>
                     {context[index] == true ? (
-                      <motion.div
+                      <m.div
                         initial={{ opacity: 0, y: 60 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 60 }}
@@ -1207,13 +1274,13 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                             ""
                           )
                         )}
-                      </motion.div>
+                      </m.div>
                     ) : (
                       ""
                     )}
-                    <motion.div layout className="w-12 h-12 self-end">
+                    <m.div layout className="w-12 h-12 self-end">
                       <Avatar alt="avatar" src={user.avatar} />
-                    </motion.div>
+                    </m.div>
                     <Dialog open={changeMessage}>
                       <DialogHeader>Change The Message</DialogHeader>
                       <DialogBody>
@@ -1285,13 +1352,13 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                             )}
                           </div>
                         </div>
-                        <motion.div
+                        <m.div
                           ref={scope}
                           className={`flex flex-col mt-3 ${
                             focused1 ? "z-20" : ""
                           }`}
                         >
-                          <motion.input
+                          <m.input
                             type="text"
                             value={inputValue1}
                             onChange={handleInputChange1}
@@ -1302,10 +1369,11 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                           />
                           <img
                             alt="search"
-                            src="/search1.png"
+                            src="/search1.webp"
+                            loading="lazy"
                             className="absolute z-20 w-6 h-6 mt-1 ml-1"
                           />
-                          <motion.ul
+                          <m.ul
                             initial={{ opacity: 0 }}
                             id="object"
                             className="ring-1 ring-green-500 bg-white max-h-80 overflow-y-auto scroll-ul rounded-br-md rounded-bl-md"
@@ -1320,8 +1388,8 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                                 {value}
                               </li>
                             ))}
-                          </motion.ul>
-                        </motion.div>
+                          </m.ul>
+                        </m.div>
                       </DialogBody>
                       <DialogFooter className="flex flex-row gap-5">
                         <button
@@ -1338,17 +1406,12 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                         </button>
                       </DialogFooter>
                     </Dialog>
-                  </motion.div>
+                  </m.div>
                 </AnimatePresence>
               )
             )}
           </div>
-          <div className="h-[10%] flex justify-center py-3">
-            <img
-              alt="document"
-              src="/add.png"
-              className="w-7 h-7 absolute left-[40.1%] mt-2"
-            />
+          <div className="h-[10%] flex justify-center py-3 ">
             <input
               type="text"
               placeholder="Type Message"
@@ -1359,14 +1422,19 @@ export default function Messanger({ user1, friends1, friendId, userId }) {
                   handleSendMessage();
                 }
               }}
-              className="w-[60%] bg-[#F6F7F9] ring-1 ring-gray-300 rounded-lg pl-11"
+              className="lg:w-[60%] w-[80%] bg-[#F6F7F9] ring-1 ring-gray-300 rounded-lg lg:pl-11 pl-4"
             />
             <button
               disabled={message.length == 0 ? true : false}
               className="p-2 disabled:bg-[#F6F7F9] bg-green-400 ml-3 ring-1 ring-gray-300 rounded-lg"
               onClick={handleSendMessage}
             >
-              <img alt="send" src="/send.png" className="w-6 h-6" />
+              <img
+                alt="send"
+                src="/send.webp"
+                loading="lazy"
+                className="w-6 h-6"
+              />
             </button>
           </div>
         </div>

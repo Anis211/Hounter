@@ -6,9 +6,16 @@ import BlueTheme from "@/details/blueTheme";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Avatar } from "@material-tailwind/react";
-import { motion, useInView } from "framer-motion";
+import { m, useInView } from "framer-motion";
+import useUser from "@/details/user";
+import Image from "next/image";
 
 export default function Article() {
+  useEffect(() => {
+    useUser.persist.rehydrate();
+  }, []);
+
+  const theme = useUser((state) => state.theme);
   const ref = useRef(null);
   const inView = useInView(ref, { once: true });
 
@@ -29,7 +36,7 @@ export default function Article() {
 
   const [articles, setArticles] = useState([
     {
-      image: "/house1.jpg",
+      image: "/house1.webp",
       header: "12 Things to know before buying a house",
       body: "Want to buy a house but are unsure about what we should know, here I will try to explain what we should know and check when we want to buy a house",
       user: {
@@ -46,7 +53,7 @@ export default function Article() {
       },
     },
     {
-      image: "/house2.jpg",
+      image: "/house2.webp",
       header: "The things we need to check when we want to buy a house",
       body: "Want to buy a house but are unsure about what we should know, here I will try to explain what we should know and check when we want to buy a house",
       user: {
@@ -63,7 +70,7 @@ export default function Article() {
       },
     },
     {
-      image: "/house3.jpg",
+      image: "/house3.webp",
       header: "7 Ways to distinguish the quality of the house we want to buy",
       body: "Want to buy a house but are unsure about what we should know, here I will try to explain what we should know and check when we want to buy a house",
       user: {
@@ -80,7 +87,7 @@ export default function Article() {
       },
     },
     {
-      image: "/house4.jpg",
+      image: "/house4.webp",
       header: "The best way to know the quality of the house we want to buy",
       body: "Want to buy a house but are unsure about what we should know, here I will try to explain what we should know and check when we want to buy a house",
       user: {
@@ -107,15 +114,15 @@ export default function Article() {
   }, [articles]);
 
   return (
-    <div ref={ref} className="mt-32 flex flex-col gap-4">
-      <div className="absolute left-[30vw] top-[360vh] z-[-1]">
+    <div ref={ref} className="mt-32 h-auto flex flex-col gap-4">
+      <div className="absolute left-[30svw] top-[360svh]">
         <LightGreen />
       </div>
-      <div className="absolute left-[30vw] top-[380vh] z-[-2]">
+      <div className="absolute left-[30svw] top-[380svh]">
         <DarkYellow />
       </div>
-      <motion.div
-        className="flex flex-col gap-2 text-center"
+      <m.div
+        className="flex flex-col gap-2 text-center z-20"
         initial="hidden"
         animate={inView ? "visible" : ""}
         transition={{
@@ -125,7 +132,7 @@ export default function Article() {
         }}
       >
         <h2 className="border-t-2 border-t-orange-500 w-11 self-center" />
-        <motion.h2
+        <m.h2
           className="text-orange-500 font-lexend font-regular"
           variants={{
             hidden: {
@@ -139,9 +146,11 @@ export default function Article() {
           }}
         >
           See tips and trick from our partnership
-        </motion.h2>
-        <motion.h2
-          className="max-w-lg mx-auto font-lexend font-bold text-[#1B1C57] md:text-4xl text-2xl lg:py-4 py-2"
+        </m.h2>
+        <m.h2
+          className={`max-w-lg mx-auto font-lexend font-bold ${
+            theme != "dark" ? "text-[#1B1C57]" : "text-white"
+          } md:text-4xl text-2xl lg:py-4 py-2`}
           variants={{
             hidden: {
               opacity: 0,
@@ -154,8 +163,8 @@ export default function Article() {
           }}
         >
           {"Find out more about \n selling and buying homes"}
-        </motion.h2>
-        <motion.button
+        </m.h2>
+        <m.button
           className="mx-auto py-3 px-4 max-w-36 bg-[#118C63] hover:shadow-xl active:shadow-sm shadow-md text-white rounded-full font-lexend font-medium text-sm"
           variants={{
             hidden: {
@@ -169,10 +178,10 @@ export default function Article() {
           }}
         >
           More Article
-        </motion.button>
-      </motion.div>
-      <motion.div className="2xl:grid 2xl:grid-cols-2 2xl:gap-12 2xl:my-10 flex flex-col gap-10">
-        <motion.div
+        </m.button>
+      </m.div>
+      <m.div className="2xl:grid 2xl:grid-cols-2 2xl:gap-12 2xl:my-10 flex flex-col z-30 gap-10 px-4 md:px-10 lg:px-16 2xl:px-0">
+        <m.div
           className="flex flex-col gap-10 md:gap-7 2xl:gap-0"
           initial="hidden"
           animate={inView ? "visible" : ""}
@@ -184,7 +193,7 @@ export default function Article() {
           }}
         >
           {articles.slice(1, 4).map((article, index) => (
-            <motion.div
+            <m.div
               key={index}
               className="flex 2xl:flex-row flex-col gap-10"
               variants={{
@@ -212,7 +221,9 @@ export default function Article() {
                   />
                   {!userHovered[index + 1] ? (
                     <div
-                      className={"flex flex-col font-lexend text-[#0E1735]"}
+                      className={`flex flex-col font-lexend ${
+                        theme != "dark" ? "text-[#0E1735]" : "text-white"
+                      }`}
                       onMouseEnter={() =>
                         setUserHovered((prev) => ({
                           ...prev,
@@ -220,7 +231,9 @@ export default function Article() {
                         }))
                       }
                     >
-                      <h2 className="font-semibold 2xl:text-md text-md md:text-xl break-words my-auto">
+                      <h2
+                        className={`font-semibold 2xl:text-md text-md md:text-xl break-words my-auto`}
+                      >
                         {article.user.name}
                       </h2>
                     </div>
@@ -249,7 +262,11 @@ export default function Article() {
                         },
                       ].map((elem, index) => (
                         <Link key={index} href={`${elem.url}`}>
-                          <p className="font-lexend font-medium text-md 2xl:text-sm text-xl">
+                          <p
+                            className={`font-lexend font-medium text-md 2xl:text-sm text-xl  ${
+                              theme != "dark" ? "text-[#0E1735]" : "text-white"
+                            }`}
+                          >
                             {elem.text}
                           </p>
                         </Link>
@@ -257,25 +274,35 @@ export default function Article() {
                     </div>
                   )}
                 </div>
-                <h2 className="font-lexend font-bold text-[#1B1C57] 2xl:text-xl text-2xl md:text-3xl self-center">
+                <h2
+                  className={`font-lexend font-bold  ${
+                    theme != "dark" ? "text-[#0E1735]" : "text-white"
+                  } 2xl:text-xl text-2xl md:text-3xl self-center`}
+                >
                   {article.header}
                 </h2>
-                <p className="font-lexend font-medium text-[#626687] text-md 2xl:text-md md:text-xl visible xl:hidden">
+                <p
+                  className={`font-lexend font-medium ${
+                    theme != "dark" ? "text-[#626687]" : "text-gray-400"
+                  } text-md 2xl:text-md md:text-xl visible xl:hidden`}
+                >
                   {article.body}
                 </p>
                 <div className="font-lexend font-regular text-[#888B97] flex flex-row gap-3 pt-4 justify-self-end">
-                  <img
-                    src="/clock.png"
+                  <Image
+                    src="/clock.webp"
                     alt="time"
+                    width={100}
+                    height={100}
                     className="max-w-6 max-h-6"
                   />
                   <p className="text-sm 2xl:text-sm md:text-lg my-auto">{`${article.timeToRead.minutes} min read  |  ${article.time.date} ${article.time.month} ${article.time.year}`}</p>
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           ))}
-        </motion.div>
-        <motion.div
+        </m.div>
+        <m.div
           className="flex flex-col gap-6"
           initial={{
             opacity: 0,
@@ -307,7 +334,11 @@ export default function Article() {
                     setUserHovered((prev) => ({ ...prev, [0]: true }))
                   }
                 >
-                  <h2 className="font-semibold text-md 2xl:text-md md:text-xl break-words my-auto">
+                  <h2
+                    className={`font-semibold text-md 2xl:text-md md:text-xl break-words my-auto  ${
+                      theme != "dark" ? "text-black" : "text-white"
+                    }`}
+                  >
                     {articles[0].user.name}
                   </h2>
                 </div>
@@ -333,7 +364,11 @@ export default function Article() {
                     },
                   ].map((elem, index) => (
                     <Link key={index} href={`${elem.url}`}>
-                      <p className="font-lexend font-medium text-md 2xl:text-md md:text-xl">
+                      <p
+                        className={`font-lexend font-medium text-md 2xl:text-md md:text-xl${
+                          theme != "dark" ? "text-black" : "text-white"
+                        }`}
+                      >
                         {elem.text}
                       </p>
                     </Link>
@@ -341,23 +376,37 @@ export default function Article() {
                 </div>
               )}
             </div>
-            <h2 className="font-lexend font-bold text-[#1B1C57] 2xl:text-2xl text-2xl md:text-3xl">
+            <h2
+              className={`font-lexend font-bold  ${
+                theme != "dark" ? "text-[#0E1735]" : "text-white"
+              } 2xl:text-2xl text-2xl md:text-3xl`}
+            >
               {articles[0].header}
             </h2>
-            <p className="font-lexend font-medium text-[#626687] text-md 2xl:text-md md:text-xl">
+            <p
+              className={`font-lexend font-medium  ${
+                theme != "dark" ? "text-[#626687]" : "text-gray-400"
+              } text-md 2xl:text-md md:text-xl`}
+            >
               {articles[0].body}
             </p>
             <div className="font-lexend font-regular text-[#888B97] flex flex-row gap-3 pt-4">
-              <img src="/clock.png" alt="time" className="max-w-6 max-h-6" />
+              <Image
+                width={100}
+                height={100}
+                src="/clock.webp"
+                alt="time"
+                className="max-w-6 max-h-6"
+              />
               <p className="text-sm 2xl:text-sm md:text-lg my-auto">{`${articles[0].timeToRead.minutes} min read  |  ${articles[0].time.date} ${articles[0].time.month} ${articles[0].time.year}`}</p>
             </div>
           </div>
-        </motion.div>
-      </motion.div>
-      <div className="absolute left-[100vw] top-[480vh] z-[-2]">
+        </m.div>
+      </m.div>
+      <div className="absolute left-[100svw] top-[480svh] z-[-2]">
         <GreenTheme />
       </div>
-      <div className="absolute left-[120vw] top-[460vh] z-[-1]">
+      <div className="absolute left-[120svw] top-[460svh] z-[-1]">
         <BlueTheme />
       </div>
     </div>

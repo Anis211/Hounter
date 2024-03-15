@@ -5,7 +5,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import Vector from "@/details/vector1";
 import Yellow from "@/details/yellow";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { useState } from "react";
 import {
   Dialog,
@@ -210,7 +210,7 @@ export default function Property({ data, id, name1 }) {
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
           >
-            <motion.h2
+            <m.h2
               className="flex flex-row font-lexend font-bold text-[36px] text-[#1B1C57] mx-auto"
               initial="hidden"
               animate="visible"
@@ -222,7 +222,7 @@ export default function Property({ data, id, name1 }) {
               }}
             >
               {name.map((letter, index) => (
-                <motion.span
+                <m.span
                   variants={{
                     hidden: {
                       opacity: 0,
@@ -241,10 +241,10 @@ export default function Property({ data, id, name1 }) {
                   }`}
                 >
                   {letter}
-                </motion.span>
+                </m.span>
               ))}
-            </motion.h2>
-            <motion.hr
+            </m.h2>
+            <m.hr
               className="border-black mt-2 border-[1px] mx-auto"
               initial={{ width: "100%" }}
               animate={hovered ? { width: "0px" } : ""}
@@ -261,7 +261,7 @@ export default function Property({ data, id, name1 }) {
             />
           </div>
           {data.tag != "" ? (
-            <motion.div
+            <m.div
               initial={{
                 opacity: 0,
                 x: 80,
@@ -294,14 +294,14 @@ export default function Property({ data, id, name1 }) {
               >
                 {data.tag}
               </p>
-            </motion.div>
+            </m.div>
           ) : (
             ""
           )}
         </div>
 
         <div className="flex flex-row gap-10 justify-between pt-16">
-          <motion.div
+          <m.div
             className="font-lexend flex flex-col"
             initial={{ y: 60, opacity: 0 }}
             animate={{ y: [60, -15, 0], opacity: [0, 0.5, 1] }}
@@ -446,8 +446,8 @@ export default function Property({ data, id, name1 }) {
               ))}
             </div>
             <hr className="border-black" />
-          </motion.div>
-          <motion.div
+          </m.div>
+          <m.div
             initial={{ y: 60, opacity: 0 }}
             animate={{ y: [60, -15, 0], opacity: [0, 0.5, 1] }}
             transition={{
@@ -536,7 +536,7 @@ export default function Property({ data, id, name1 }) {
                 </DialogFooter>
               </Dialog>
             </div>
-          </motion.div>
+          </m.div>
         </div>
         {[
           {

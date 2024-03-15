@@ -14,7 +14,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getDoc, doc, setDoc, collection } from "firebase/firestore";
 import useUser from "@/details/user";
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion, useAnimate } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import Link from "next/link";
 
 export default function Details({ id, det }) {
@@ -373,26 +373,65 @@ export default function Details({ id, det }) {
         type: type,
         date: { year: year, month: month, day: day },
         viewed: 0,
-        tag: null,
+        tag: "new",
       },
-    }).then(() =>
-      setDoc(docRef, {
-        ...data,
-        [newDealName]: {
-          propertyImages: urls,
-          propertyName: newDealName,
-          propertyCost: newDealPrice,
-          bedrooms: bedrooms,
-          bathrooms: bathrooms,
-          carports: carports,
-          floors: floors,
-          type: type,
-          date: { year: year, month: month, day: day },
-          viewed: 0,
-          tag: null,
+    });
+
+    const res2 = await getDoc(doc(firestore, "list", "last"));
+    const fields = res2.data();
+
+    const res3 = await getDoc(doc(firestore, "Users", id));
+    const user = res3.data();
+
+    if (fields.list.length < 10) {
+      await setDoc(doc(firestore, "list", "last"), [
+        ...fields,
+        {
+          deal: {
+            propertyImages: urls,
+            propertyName: newDealName,
+            propertyCost: newDealPrice,
+            bedrooms: bedrooms,
+            bathrooms: bathrooms,
+            carports: carports,
+            floors: floors,
+            type: type,
+            date: { year: year, month: month, day: day },
+            viewed: 0,
+            tag: null,
+          },
+          id: id,
+          user: {
+            avatar: user.avatar,
+            details: user.details,
+          },
         },
-      })
-    );
+      ]);
+    } else {
+      await setDoc(doc(firestore, "list", "last"), [
+        {
+          deal: {
+            propertyImages: urls,
+            propertyName: newDealName,
+            propertyCost: newDealPrice,
+            bedrooms: bedrooms,
+            bathrooms: bathrooms,
+            carports: carports,
+            floors: floors,
+            type: type,
+            date: { year: year, month: month, day: day },
+            viewed: 0,
+            tag: null,
+          },
+          id: id,
+          user: {
+            avatar: user.avatar,
+            details: user.details,
+          },
+        },
+        ...fields.slice(0, fields.length - 1),
+      ]);
+    }
 
     setAddDeal(false);
   };
@@ -415,32 +454,37 @@ export default function Details({ id, det }) {
   };
 
   return (
-    <motion.div className="w-full h-auto">
+    <m.div className="w-full h-auto">
       <div className="mx-auto flex flex-row gap-3 justify-center mt-12 z-30">
-        <motion.button
+        <m.button
           onClick={handleReveal}
           className="w-32 h-12 bg-[#D1FAE5] ring-1 ring-green-500 rounded-lg hover:shadow-lg active:shadow-sm "
         >
           Reveal details
-        </motion.button>
-        <motion.button
+        </m.button>
+        <m.button
           onClick={handleReveal1}
           className="w-32 h-12 bg-[#D1FAE5] ring-1 ring-green-500 rounded-lg hover:shadow-lg active:shadow-sm "
         >
           Reveal deals
-        </motion.button>
+        </m.button>
       </div>
       <AnimatePresence>
         {chosen == "details" ? (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 60 }}
             animate={{ y: [60, 0, 0], opacity: [0, 0.5, 1] }}
             exit={{ y: [0, 60, 60], opacity: [1, 0.5, 0] }}
             transition={{ duration: 1, type: "spring", times: [0, 0.5, 1] }}
-            className={`opacity-0 mx-auto mt-5 w-[60vw] h-96 rounded-[20px] bg-[#D1FAE5] ring-green-500 ring-1 flex flex-col gap-5 z-20`}
+            className={`opacity-0 mx-auto mt-5 lg:w-[60vw] w-full md:h-96 h-auto pb-14 rounded-[20px] bg-[#D1FAE5] ring-green-500 ring-1 flex flex-col gap-5 z-20`}
           >
             <div className="absolute mt-3 mr-3 self-end" onClick={handleClose}>
-              <img alt="cross" src="/close.png" className="w-5 h-5 z-20" />
+              <img
+                alt="cross"
+                src="/close.webp"
+                loading="lazy"
+                className="w-5 h-5 z-20"
+              />
             </div>
             <div className="flex flex-row text-center mx-auto">
               <Dialog open={dialog} handler={handleOpen}>
@@ -503,9 +547,9 @@ export default function Details({ id, det }) {
                 {details != undefined ? details.name?.split(" ")[1] : ""}
               </h2>
             </div>
-            <div className="flex flex-row h-full">
-              <div className="flex flex-col gap-2 ml-14 mt-5 text-[#1B1C57] font-lexend ">
-                <h1 className="font-bold text-[21px] text-center">
+            <div className="flex lg:flex-row flex-col items-center h-full">
+              <div className="flex flex-col gap-2 lg:ml-14 ml-[10%] mt-5 text-[#1B1C57] font-lexend">
+                <h1 className="font-bold text-[21px] text-center mb-5 lg:mb-0">
                   Address Information
                 </h1>
                 <h2 className="font-semibold text-[18px] flex flex-row">
@@ -515,7 +559,8 @@ export default function Details({ id, det }) {
                     {details != undefined ? details.country : ""}
                     <img
                       alt="pencil"
-                      src="/pencil.png"
+                      src="/pencil.webp"
+                      loading="lazy"
                       className="ml-2 w-5 h-5 hover:shadow-lg active:shadow-sms"
                       onClick={() => setCountryOpen(true)}
                     />
@@ -557,7 +602,8 @@ export default function Details({ id, det }) {
                   </span>
                   <img
                     alt="pencil"
-                    src="/pencil.png"
+                    src="/pencil.webp"
+                    loading="lazy"
                     className=" w-5 h-5 hover:shadow-lg active:shadow-sm"
                     onClick={() => setStateOpen(true)}
                   />
@@ -598,7 +644,8 @@ export default function Details({ id, det }) {
                   </span>
                   <img
                     alt="pencil"
-                    src="/pencil.png"
+                    src="/pencil.webp"
+                    loading="lazy"
                     className=" w-5 h-5 hover:shadow-lg active:shadow-sm"
                     onClick={() => setCityOpen(true)}
                   />
@@ -632,9 +679,9 @@ export default function Details({ id, det }) {
                   </Dialog>
                 </h2>
               </div>
-              <div className="w-[2px] h-[80%] mx-20 bg-green-500"></div>
-              <div className="flex flex-col gap-2 text-[#1B1C57] font-lexend mt-5">
-                <h1 className="font-bold text-[20px] text-center">
+              <div className="lg:w-[2px] lg:h-[80%] w-[80%] h-[2px] lg:mx-20 my-10 mx-auto bg-green-500" />
+              <div className="flex flex-col gap-2 text-[#1B1C57] font-lexend mt-5 items-center">
+                <h1 className="font-bold text-[20px] text-center mb-5 lg:mb-0">
                   Contact Information
                 </h1>
                 {[
@@ -675,7 +722,7 @@ export default function Details({ id, det }) {
                       </span>
                       <img
                         alt="pencil"
-                        src="/pencil.png"
+                        src="/pencil.webp"
                         className="ml-2 w-5 h-5 hover:shadow-lg active:shadow-sms"
                         onClick={obj.setOpen}
                       />
@@ -712,29 +759,34 @@ export default function Details({ id, det }) {
                 })}
               </div>
             </div>
-          </motion.div>
+          </m.div>
         ) : chosen == "deals" ? (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 60 }}
             animate={{ y: [60, 0, 0], opacity: [0, 0.5, 1] }}
             exit={{ y: [0, 60, 60], opacity: [1, 0.5, 0] }}
             transition={{ duration: 1, type: "spring", times: [0, 0.5, 1] }}
-            className={`account-scroll overflow-x-auto opacity-0 w-[90vw] h-[80vh] mt-5 mb-[60px] rounded-[20px] bg-[#D1FAE5] ring-green-500 ring-1 flex flex-col gap-5 z-20 `}
+            className={`opacity-0 lg:w-[90vw] w-full h-[80vh] mt-5 mb-[60px] rounded-[20px] bg-[#D1FAE5] ring-green-500 ring-1 flex flex-col gap-5 z-20 `}
           >
             <div className="absolute mt-3 mr-3 self-end" onClick={handleClose}>
-              <img alt="cross" src="/close.png" className="w-5 h-5" />
+              <img
+                alt="cross"
+                src="/close.webp"
+                loading="lazy"
+                className="w-5 h-5"
+              />
             </div>
-            <div className="flex flex-row gap-2 justify-center">
-              <motion.h2
+            <div className="flex lg:flex-row flex-col gap-2 justify-center">
+              <m.h2
                 className="self-center font-lexend font-semibold text-[#1B1C57] text-[26px] mt-4 "
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 1, ease: "backInOut", delay: 1 }}
               >
                 Your Deals
-              </motion.h2>
+              </m.h2>
               <ButtonGroup
-                className={`font-lexend font-semibold text-[18px] text-center ml-4 mt-3 flex flex-row gap-2 px-2 self-center rounded-lg`}
+                className={`font-lexend font-semibold lg:text-[18px] text-sm text-center lg:ml-4 mt-3 flex flex-row lg:gap-2 gap-1 px-2 self-center rounded-lg`}
               >
                 {["house", "villa", "apartment", "all"].map(
                   (variant, index) => (
@@ -742,7 +794,7 @@ export default function Details({ id, det }) {
                       key={index}
                       value={variant}
                       onClick={handleSort}
-                      className="capitalize font-lexend font-semibold text-[16px]"
+                      className="capitalize font-lexend font-semibold text-[16px] bg-black"
                     >
                       {variant != "all" ? variant + "s" : variant}
                     </Button>
@@ -750,7 +802,7 @@ export default function Details({ id, det }) {
                 )}
               </ButtonGroup>
             </div>
-            <div className="flex flex-row gap-5 mt-1 w-full">
+            <div className="flex flex-row gap-5 mt-1 w-full overflow-x-auto account-scroll">
               {deals != null
                 ? deals.map((deal, index) => {
                     return (
@@ -792,7 +844,7 @@ export default function Details({ id, det }) {
               >
                 <img
                   alt="plus"
-                  src="/big_plus.png"
+                  src="/big_plus.webp"
                   className="w-24 h-24 mx-auto "
                 />
                 <h2 className="text-black font-lexend font-semibold text-[26px]">
@@ -892,11 +944,11 @@ export default function Details({ id, det }) {
                 </button>
               </DialogFooter>
             </Dialog>
-          </motion.div>
+          </m.div>
         ) : (
           ""
         )}
       </AnimatePresence>
-    </motion.div>
+    </m.div>
   );
 }

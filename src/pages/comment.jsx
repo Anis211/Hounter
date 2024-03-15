@@ -21,6 +21,9 @@ export default function AddComment({ user }) {
     const data = res.data();
     const now = new Date();
 
+    const res1 = await getDoc(doc(firestore, "comments", "last"));
+    const data1 = res1.data();
+
     if (
       inputValue.split(" ").length > 1 &&
       textareaValue.split(" ").length > 1
@@ -53,6 +56,40 @@ export default function AddComment({ user }) {
           },
         ],
       });
+
+      if (data1.comments.length < 6) {
+        await setDoc(doc(firestore, "comments", "last"), {
+          comments: [
+            ...data1.comments,
+            {
+              header: inputValue,
+              body: textareaValue,
+              user: { ...user.details, avatar: user.avatar },
+              rating: ratingValue,
+              time: {
+                ms: now.getTime(),
+              },
+              image: downloadUrl,
+            },
+          ],
+        });
+      } else {
+        await setDoc(doc(firestore, "comments", "last"), {
+          comments: [
+            ...data1.comments.slice(1, data1.comments.length),
+            {
+              header: inputValue,
+              body: textareaValue,
+              user: { ...user.details, avatar: user.avatar },
+              rating: ratingValue,
+              time: {
+                ms: now.getTime(),
+              },
+              image: downloadUrl,
+            },
+          ],
+        });
+      }
 
       await setDoc(doc(firestore, "Users", user.details.id), {
         ...user,
@@ -109,7 +146,7 @@ export default function AddComment({ user }) {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="Enter the header of the comment..."
-            className="pl-4 py-3 xl:w-[40vw] w-[95%] z-20 mx-auto h-[7vh] overflow-hidden rounded-lg bg-white bg-opacity-65 placeholder:text-gray-600 placeholder:text-opacity-70"
+            className="pl-4 py-3 xl:w-[40vw] w-[95%] z-10 mx-auto h-[7vh] overflow-hidden rounded-lg bg-white bg-opacity-65 placeholder:text-gray-600 placeholder:text-opacity-70"
           />
 
           {textareaValue != "" ? (
